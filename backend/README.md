@@ -167,6 +167,11 @@ npm run build
 
 El sistema usa JWT. Las rutas de consulta son publicas, pero las rutas que registran, actualizan, eliminan o anulan datos requieren token.
 
+Roles principales:
+
+- `admin`: puede administrar usuarios y operar todos los modulos.
+- `vendedor`: puede operar inventario, ventas, clientes, notificaciones y reportes, pero no puede crear usuarios.
+
 Login:
 
 ```txt
@@ -193,6 +198,8 @@ Si la tabla `usuarios` esta vacia, se puede crear el primer usuario sin token:
 ```txt
 POST /api/usuarios
 ```
+
+Despues del primer usuario, solo un usuario con rol `admin` puede crear nuevos usuarios.
 
 ## Rutas API
 

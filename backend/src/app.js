@@ -25,6 +25,13 @@ app.use('/api/usuarios', usuariosRoutes);
 app.use('/api/notificaciones', notificacionesRoutes);
 app.use('/api/reportes', reportesRoutes);
 
+app.get('/api/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'botica-backend'
+  });
+});
+
 app.get('/', (req, res) => {
   res.redirect(process.env.FRONTEND_URL || 'http://localhost:5173');
 });

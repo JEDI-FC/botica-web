@@ -1,13 +1,13 @@
 import React from 'react';
 
-function Navbar({ vista, onVistaChange, onLogout }) {
+function Navbar({ vista, onVistaChange, onLogout, usuario }) {
   return (
     <header className="navbar">
       <div className="nav-brand">
         <div className="nav-logo" aria-hidden="true">NS</div>
         <div>
           <h1>Botica Nova Salud</h1>
-          <span>Sistema de gestion</span>
+          <span>Sistema de gestion · {usuario?.rol || 'sin rol'}</span>
         </div>
       </div>
       <nav className="nav-actions" aria-label="Principal">
@@ -75,6 +75,16 @@ function Navbar({ vista, onVistaChange, onLogout }) {
           <span aria-hidden="true">M</span>
           Mi perfil
         </button>
+        {usuario?.rol === 'admin' && (
+          <button
+            className={vista === 'usuarios' ? 'active' : ''}
+            type="button"
+            onClick={() => onVistaChange('usuarios')}
+          >
+            <span aria-hidden="true">U</span>
+            Usuarios
+          </button>
+        )}
         <button type="button" onClick={onLogout}>
           <span aria-hidden="true">S</span>
           Salir

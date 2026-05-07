@@ -31,6 +31,9 @@ function Inventario() {
   const [alertas, setAlertas] = useState([]);
   const [producto, setProducto] = useState(productoInicial);
   const [productoEditando, setProductoEditando] = useState(null);
+  const [productoPaso, setProductoPaso] = useState(0);
+  const [productoPasoMaximo, setProductoPasoMaximo] = useState(0);
+  const [wizardError, setWizardError] = useState('');
   const [categoria, setCategoria] = useState({ nombre: '', descripcion: '' });
   const [proveedor, setProveedor] = useState({
     nombre: '',
@@ -88,6 +91,52 @@ function Inventario() {
     }
   };
 
+  const validarPasoProducto = (paso = productoPaso) => {
+    if (paso === 0 && !producto.nombre.trim()) {
+      return 'Ingresa el nombre del producto para continuar.';
+    }
+
+    if (paso === 1) {
+      if (!producto.precio_venta || Number(producto.precio_venta) <= 0) {
+        return 'Ingresa un precio de venta mayor a cero.';
+      }
+
+      if (producto.stock === '' || Number(producto.stock) < 0) {
+        return 'Ingresa un stock valido.';
+      }
+
+      if (producto.stock_minimo === '' || Number(producto.stock_minimo) < 0) {
+        return 'Ingresa un stock minimo valido.';
+      }
+    }
+
+    return '';
+  };
+
+  const irAPasoProducto = (paso) => {
+    if (paso <= productoPasoMaximo) {
+      setWizardError('');
+      setProductoPaso(paso);
+      return;
+    }
+
+    setWizardError('Completa el paso actual antes de avanzar.');
+  };
+
+  const avanzarProducto = () => {
+    const errorPaso = validarPasoProducto();
+
+    if (errorPaso) {
+      setWizardError(errorPaso);
+      return;
+    }
+
+    const siguientePaso = productoPaso + 1;
+    setWizardError('');
+    setProductoPaso(siguientePaso);
+    setProductoPasoMaximo(Math.max(productoPasoMaximo, siguientePaso));
+  };
+
   const handleProductoSubmit = (event) => {
     event.preventDefault();
 
@@ -113,6 +162,9 @@ function Inventario() {
 
       setProducto(productoInicial);
       setProductoEditando(null);
+      setProductoPaso(0);
+      setProductoPasoMaximo(0);
+      setWizardError('');
     });
   };
 
@@ -138,6 +190,9 @@ function Inventario() {
 
   const editarProducto = (item) => {
     setProductoEditando(item.id_producto);
+    setProductoPaso(0);
+    setProductoPasoMaximo(3);
+    setWizardError('');
     setProducto({
       nombre: item.nombre || '',
       descripcion: item.descripcion || '',
@@ -205,61 +260,118 @@ function Inventario() {
                 onClick={() => {
                   setProducto(productoInicial);
                   setProductoEditando(null);
+                  setProductoPaso(0);
+                  setProductoPasoMaximo(0);
+                  setWizardError('');
                 }}
               >
                 Cancelar
               </button>
             )}
           </div>
-          <label>
-            Nombre
-            <input value={producto.nombre} onChange={(event) => setProducto({ ...producto, nombre: event.target.value })} required />
-          </label>
-          <label>
-            Codigo
-            <input value={producto.codigo_barra} onChange={(event) => setProducto({ ...producto, codigo_barra: event.target.value })} />
-          </label>
-          <label>
-            Precio compra
-            <input type="number" min="0" step="0.01" value={producto.precio_compra} onChange={(event) => setProducto({ ...producto, precio_compra: event.target.value })} />
-          </label>
-          <label>
-            Precio venta
-            <input type="number" min="0" step="0.01" value={producto.precio_venta} onChange={(event) => setProducto({ ...producto, precio_venta: event.target.value })} required />
-          </label>
-          <label>
-            Stock
-            <input type="number" min="0" value={producto.stock} onChange={(event) => setProducto({ ...producto, stock: event.target.value })} required />
-          </label>
-          <label>
-            Stock minimo
-            <input type="number" min="0" value={producto.stock_minimo} onChange={(event) => setProducto({ ...producto, stock_minimo: event.target.value })} required />
-          </label>
-          <label>
-            Vencimiento
-            <input type="date" value={producto.fecha_vencimiento} onChange={(event) => setProducto({ ...producto, fecha_vencimiento: event.target.value })} />
-          </label>
-          <label>
-            Categoria
-            <select value={producto.id_categoria} onChange={(event) => setProducto({ ...producto, id_categoria: event.target.value })}>
-              <option value="">Sin categoria</option>
-              {categorias.map((item) => <option key={item.id_categoria} value={item.id_categoria}>{item.nombre}</option>)}
-            </select>
-          </label>
-          <label>
-            Proveedor
-            <select value={producto.id_proveedor} onChange={(event) => setProducto({ ...producto, id_proveedor: event.target.value })}>
-              <option value="">Sin proveedor</option>
-              {proveedores.map((item) => <option key={item.id_proveedor} value={item.id_proveedor}>{item.nombre}</option>)}
-            </select>
-          </label>
-          <label className="wide">
-            Descripcion
-            <textarea value={producto.descripcion} onChange={(event) => setProducto({ ...producto, descripcion: event.target.value })} rows="3" />
-          </label>
-          <button className="wide" type="submit">
-            {productoEditando ? 'Guardar cambios' : 'Registrar producto'}
-          </button>
+          <div className="wizard wide">
+            {['Datos', 'Stock', 'Clasificacion', 'Confirmar'].map((paso, index) => (
+              <button
+                key={paso}
+                type="button"
+                className={[
+                  productoPaso === index ? 'active' : '',
+                  productoPasoMaximo > index ? 'complete' : '',
+                  productoPasoMaximo < index ? 'locked' : ''
+                ].filter(Boolean).join(' ')}
+                onClick={() => irAPasoProducto(index)}
+              >
+                <strong>{index + 1}</strong>
+                <span>{paso}</span>
+              </button>
+            ))}
+          </div>
+          {wizardError && <p className="wizard-message wide">{wizardError}</p>}
+
+          {productoPaso === 0 && (
+            <div className="wizard-content wide form-grid">
+              <label>
+                Nombre
+                <input value={producto.nombre} onChange={(event) => setProducto({ ...producto, nombre: event.target.value })} required />
+              </label>
+              <label>
+                Codigo
+                <input value={producto.codigo_barra} onChange={(event) => setProducto({ ...producto, codigo_barra: event.target.value })} />
+              </label>
+              <label className="wide">
+                Descripcion
+                <textarea value={producto.descripcion} onChange={(event) => setProducto({ ...producto, descripcion: event.target.value })} rows="3" />
+              </label>
+            </div>
+          )}
+
+          {productoPaso === 1 && (
+            <div className="wizard-content wide form-grid">
+              <label>
+                Precio compra
+                <input type="number" min="0" step="0.01" value={producto.precio_compra} onChange={(event) => setProducto({ ...producto, precio_compra: event.target.value })} />
+              </label>
+              <label>
+                Precio venta
+                <input type="number" min="0" step="0.01" value={producto.precio_venta} onChange={(event) => setProducto({ ...producto, precio_venta: event.target.value })} required />
+              </label>
+              <label>
+                Stock
+                <input type="number" min="0" value={producto.stock} onChange={(event) => setProducto({ ...producto, stock: event.target.value })} required />
+              </label>
+              <label>
+                Stock minimo
+                <input type="number" min="0" value={producto.stock_minimo} onChange={(event) => setProducto({ ...producto, stock_minimo: event.target.value })} required />
+              </label>
+            </div>
+          )}
+
+          {productoPaso === 2 && (
+            <div className="wizard-content wide form-grid">
+              <label>
+                Vencimiento
+                <input type="date" value={producto.fecha_vencimiento} onChange={(event) => setProducto({ ...producto, fecha_vencimiento: event.target.value })} />
+              </label>
+              <label>
+                Categoria
+                <select value={producto.id_categoria} onChange={(event) => setProducto({ ...producto, id_categoria: event.target.value })}>
+                  <option value="">Sin categoria</option>
+                  {categorias.map((item) => <option key={item.id_categoria} value={item.id_categoria}>{item.nombre}</option>)}
+                </select>
+              </label>
+              <label>
+                Proveedor
+                <select value={producto.id_proveedor} onChange={(event) => setProducto({ ...producto, id_proveedor: event.target.value })}>
+                  <option value="">Sin proveedor</option>
+                  {proveedores.map((item) => <option key={item.id_proveedor} value={item.id_proveedor}>{item.nombre}</option>)}
+                </select>
+              </label>
+            </div>
+          )}
+
+          {productoPaso === 3 && (
+            <div className="wizard-review wide">
+              <strong>{producto.nombre || 'Producto sin nombre'}</strong>
+              <span>Precio venta: S/ {Number(producto.precio_venta || 0).toFixed(2)}</span>
+              <span>Stock: {producto.stock || 0} / minimo {producto.stock_minimo || 0}</span>
+              <span>Codigo: {producto.codigo_barra || 'Sin codigo'}</span>
+            </div>
+          )}
+
+          <div className="wizard-actions wide">
+            <button type="button" className="ghost" disabled={productoPaso === 0} onClick={() => setProductoPaso(productoPaso - 1)}>
+              Anterior
+            </button>
+            {productoPaso < 3 ? (
+              <button type="button" onClick={avanzarProducto}>
+                Siguiente
+              </button>
+            ) : (
+              <button type="submit">
+                {productoEditando ? 'Guardar cambios' : 'Registrar producto'}
+              </button>
+            )}
+          </div>
         </form>
 
         <div className="side-panels">

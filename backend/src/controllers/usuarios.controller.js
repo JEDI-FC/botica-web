@@ -84,6 +84,10 @@ const crearUsuario = async (req, res, next) => {
       return res.status(401).json({ mensaje: 'Token requerido para registrar nuevos usuarios' });
     }
 
+    if (usuariosRegistrados[0].total > 0 && req.usuario.rol !== 'admin') {
+      return res.status(403).json({ mensaje: 'Solo el administrador puede registrar usuarios' });
+    }
+
     const passwordHash = await bcrypt.hash(password, 10);
 
     const [resultado] = await db.query(`

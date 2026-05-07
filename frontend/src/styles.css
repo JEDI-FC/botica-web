@@ -444,6 +444,123 @@ td span {
   grid-column: 1 / -1;
 }
 
+.wizard {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #ffffff, var(--surface-muted));
+}
+
+.wizard button {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  min-height: 54px;
+  align-items: center;
+  justify-content: start;
+  gap: 9px;
+  padding: 9px 10px;
+  border: 1px solid transparent;
+  color: var(--muted);
+  background: #ffffff;
+  box-shadow: none;
+  text-align: left;
+}
+
+.wizard button.active {
+  color: var(--primary-dark);
+  border-color: #99f6e4;
+  background: var(--primary-soft);
+  box-shadow: 0 8px 18px rgba(4, 120, 87, 0.1);
+}
+
+.wizard button.complete {
+  color: var(--primary-dark);
+}
+
+.wizard button.locked {
+  color: #94a3b8;
+  background: #f8fafc;
+}
+
+.wizard button strong {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  color: #64748b;
+  background: #e2e8f0;
+  font-size: 13px;
+}
+
+.wizard button.active strong,
+.wizard button.complete strong {
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.wizard button.complete strong::after {
+  content: "";
+}
+
+.wizard button span {
+  overflow: hidden;
+  color: inherit;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.wizard-content {
+  display: grid;
+  margin-top: 2px;
+}
+
+.wizard-message {
+  padding: 10px 12px;
+  border: 1px solid #fed7aa;
+  border-radius: 8px;
+  color: #9a3412;
+  background: #fff7ed;
+  font-weight: 700;
+}
+
+.wizard-review {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+}
+
+.wizard-review strong {
+  font-size: 18px;
+}
+
+.wizard-review span,
+.permission-note span {
+  color: var(--muted);
+}
+
+.wizard-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.permission-note {
+  display: grid;
+  gap: 7px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--primary-soft);
+}
+
 .side-panels {
   display: grid;
   gap: 18px;
@@ -792,8 +909,17 @@ td strong {
   .sales-layout,
   .movement-filters,
   .stock-alert-banner,
+  .wizard,
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .wizard button {
+    grid-template-columns: 30px minmax(0, 1fr);
+  }
+
+  .wizard-actions {
+    flex-direction: column;
   }
 }
 

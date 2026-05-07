@@ -85,21 +85,37 @@ Servicios disponibles:
 Frontend: http://localhost:8080
 Backend:  http://localhost:3000
 MySQL:    localhost:3307
+Health backend:  http://localhost:3000/api/health
+Health frontend: http://localhost:8080/health
 ```
 
 Nota: Docker Desktop debe estar iniciado antes de ejecutar `docker compose up --build`.
 
-El contenedor de MySQL importa automaticamente:
+El contenedor de MySQL importa automaticamente los scripts SQL dentro de:
 
 ```txt
-backend/sql/botica_nova_salud.sql
+backend/sql/
 ```
+
+Actualmente se incluyen el esquema principal y tablas adicionales como notificaciones.
 
 Para reiniciar la base de datos desde cero:
 
 ```bash
 docker compose down -v
 docker compose up --build
+```
+
+Para revisar el estado de los contenedores:
+
+```bash
+docker compose ps
+```
+
+Para ver logs:
+
+```bash
+docker compose logs -f
 ```
 
 ### Backend
