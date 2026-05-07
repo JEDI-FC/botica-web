@@ -49,8 +49,58 @@ botica-web/
 - Node.js 18 o superior.
 - npm.
 - MySQL.
+- Git.
+- Docker y Docker Compose, si se ejecuta con contenedores.
+
+## Clonar el proyecto
+
+Clonar el repositorio y entrar al directorio:
+
+```bash
+git clone https://github.com/JEDI-FC/botica-web.git
+cd botica-web
+```
+
+Reemplazar `URL_DEL_REPOSITORIO` por la URL HTTPS o SSH del repositorio en GitHub. Despues de clonar, se puede ejecutar con Docker o configurar backend y frontend manualmente.
 
 ## Configuracion
+
+### Docker
+
+Copiar el archivo de variables para Docker:
+
+```bash
+cp .env.docker.example .env
+```
+
+Levantar la aplicacion completa:
+
+```bash
+docker compose up --build
+```
+
+Servicios disponibles:
+
+```txt
+Frontend: http://localhost:8080
+Backend:  http://localhost:3000
+MySQL:    localhost:3307
+```
+
+Nota: Docker Desktop debe estar iniciado antes de ejecutar `docker compose up --build`.
+
+El contenedor de MySQL importa automaticamente:
+
+```txt
+backend/sql/botica_nova_salud.sql
+```
+
+Para reiniciar la base de datos desde cero:
+
+```bash
+docker compose down -v
+docker compose up --build
+```
 
 ### Backend
 

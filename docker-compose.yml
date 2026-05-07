@@ -1,0 +1,54 @@
+services:
+  mysql:
+    image: mysql:8.4
+    container_name: botica_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root_password}
+      MYSQL_DATABASE: ${DB_NAME:-botica_nova_salud}
+      MYSQL_USER: ${DB_USER:-botica_user}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-botica_password}
+    ports:
+      - "${MYSQL_PORT:-3307}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./backend/sql/botica_nova_salud.sql:/docker-entrypoint-initdb.d/01-botica_nova_salud.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: botica_backend
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      DB_HOST: mysql
+      DB_USER: ${DB_USER:-botica_user}
+      DB_PASSWORD: ${DB_PASSWORD:-botica_password}
+      DB_NAME: ${DB_NAME:-botica_nova_salud}
+      JWT_SECRET: ${JWT_SECRET:-cambia_esta_clave_en_produccion}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_URL: ${VITE_API_URL:-/api}
+    container_name: botica_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-8080}:80"
+
+volumes:
+  mysql_data:
